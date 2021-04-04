@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <pthread.h>
 
-#include "locked_queue.h"
+#include "coarse_queue.h"
 
 void Queue_Init(queue_t *q,int _size) {
 
@@ -11,8 +11,7 @@ void Queue_Init(queue_t *q,int _size) {
     tmp->next = NULL;
     q->size = _size; q->count = 0;
     q->head = q->tail = tmp;
-    pthread_mutex_init(&q->head_lock,NULL);
-    pthread_mutex_init(&q->tail_lock,NULL);
+    pthread_mutex_init(&q->lock,NULL);
 }
 
 void Queue_Print(queue_t *q) {
@@ -34,11 +33,11 @@ void *Queue_Enqueue(void* multi_arg){
     tmp->value  = value;
     tmp->next   = NULL;
 
-    pthread_mutex_lock(&q->tail_lock);
+    pthread_mutex_lock(&q->lock);
     q->count        += 1;
     q->tail->next   = tmp;
     q->tail         = tmp;
-    pthread_mutex_unlock(&q->tail_lock);
+    pthread_mutex_unlock(&q->lock);
 }
 
 void *Queue_Dequeue(void* multi_arg){
@@ -47,17 +46,17 @@ void *Queue_Dequeue(void* multi_arg){
     queue_t *q  = arg->_q;
     int *value  = arg->_value;
 
-    pthread_mutex_lock(&q->head_lock);
+    pthread_mutex_lock(&q->lock);
     q->count            -= 1;
     node_t *tmp         = q->head;
     node_t *new_head    = tmp->next;
     if (new_head == NULL) {
-        pthread_mutex_unlock(&q->head_lock);
+        pthread_mutex_unlock(&q->lock);
         return 0;
     }
     *value = new_head->value;
     q->head = new_head;
-    pthread_mutex_unlock(&q->head_lock);
+    pthread_mutex_unlock(&q->lock);
     free(tmp);
     return 0;
 }
