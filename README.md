@@ -1,6 +1,6 @@
 # Concurrent_Queue
 
-Lock-Based Concurrent Queue
+Lock-Based Concurrent Queue, Fine-grained lock & Coarse-grained lock
 
 ## Implementation
 - Queue_Init(queue_t *q,int _size);
